@@ -3,7 +3,9 @@
 #include <unistd.h>
 #include <sys/mman.h>
 
+// char imageName[] = 
 int showImage(char *imageName, int w, int y, int x1, int y1)
+//
 {
     // 打开开发板
     int lcd = open("/dev/fb0", O_RDWR);
@@ -29,25 +31,25 @@ int showImage(char *imageName, int w, int y, int x1, int y1)
     lseek(imagfd, 54, SEEK_SET);
     // 读取图片
     char *lcdBuf = mmap(NULL, 800 * 480 * 4, PROT_READ | PROT_WRITE, MAP_SHARED, lcd, 0);
-    char imagBuf[w * y * 3]; // 图片
+    char imagBuf[w * h * 3]; // 图片
     int x, y;
     read(imagfd, imagBuf, w * y * 3); // 读取
-    for (x = 0; x < 800; x++)
+    for (x = x1; x < (x1 + w); x++)
     {
-        for (y = 0; y < 480; y++)
+        for (y = y1; y < (y1 + h); y++)
         {
-            lcdBuf[0 + 4 * x + 800 * y * 4] = imagBuf[0 + 3 * x + 800 * (479 - y) * 3]; // B
-            lcdBuf[1 + 4 * x + 800 * y * 4] = imagBuf[1 + 3 * x + 800 * (479 - y) * 3]; // G
-            lcdBuf[2 + 4 * x + 800 * y * 4] = imagBuf[2 + 3 * x + 800 * (479 - y) * 3]; // R
+            lcdBuf[0 + 4 * x + 800 * y * 4] = imagBuf[0 + 3 * (x - x1) + w * (h-1 - (y - y1)) * 3]; // B
+            lcdBuf[1 + 4 * x + 800 * y * 4] = imagBuf[1 + 3 * (x - x1) + w * (h-1 - (y - y1)) * 3]; // G
+            lcdBuf[2 + 4 * x + 800 * y * 4] = imagBuf[2 + 3 * (x - x1) + w * (h-1 - (y - y1)) * 3]; // R
             lcdBuf[3 + 4 * x + 800 * y * 4] = 0;                                        // 透明度
         }
     }
     write(lcd, lcdBuf, 800 * 480 * 4);
-    munmap(lcdBuf, 800 * 400 * 4);
+    munmap(lcdBuf, 800 * 480 * 4);
     close(lcd);
     close(imagfd);
 }
 
 int main(){
-
+    showImage("nmb.bmp",800,480,400,240);
 }
